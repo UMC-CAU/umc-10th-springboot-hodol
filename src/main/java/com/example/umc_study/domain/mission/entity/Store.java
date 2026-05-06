@@ -28,6 +28,9 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     private Float score;
 
+    @Column(length = 30)
+    private String category;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;

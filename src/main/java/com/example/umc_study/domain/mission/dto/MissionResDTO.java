@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,6 +38,46 @@ public class MissionResDTO {
         private String missionSpec;
         private String rewardPoint;
         private MissionStatus status;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class HomeMissionListDTO {
+        private MissionProgressDTO progress;
+        private List<HomeMissionDetailDTO> missionList;
+        private Integer listSize;
+        private Integer pageNumber;
+        private Integer pageSize;
+        private Integer totalPages;
+        private Long totalElements;
+        private Boolean first;
+        private Boolean last;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MissionProgressDTO {
+        private Integer currentMissionCount;
+        private Integer targetMissionCount;
+        private String targetRewardPoint;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class HomeMissionDetailDTO {
+        private Long missionId;
+        private String storeName;
+        private String missionSpec;
+        private String rewardPoint;
+        private LocalDate deadline;
+        private String dDay;
+        private String category;
     }
 
     @Builder

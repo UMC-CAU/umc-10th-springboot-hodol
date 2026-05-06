@@ -11,4 +11,6 @@ public interface MemberMissionRepository extends JpaRepository<MemberMission, Lo
 
     @EntityGraph(attributePaths = {"mission", "mission.store"})
     Page<MemberMission> findAllByMember_IdAndStatus(Long memberId, MissionStatus status, Pageable pageable);
+
+    long countByMember_IdAndStatus(Long memberId, MissionStatus status);
 }
