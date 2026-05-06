@@ -1,5 +1,6 @@
 package com.example.umc_study.domain.mission.dto;
 
+import com.example.umc_study.domain.mission.enums.MissionStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +17,13 @@ public class MissionResDTO {
     @AllArgsConstructor
     public static class MissionListDTO {
         private List<MissionDetailDTO> missionList;
-        private Integer listSize; // 목록 개수
+        private Integer listSize;
+        private Integer pageNumber;
+        private Integer pageSize;
+        private Integer totalPages;
+        private Long totalElements;
+        private Boolean first;
+        private Boolean last;
     }
 
     @Builder
@@ -24,11 +31,12 @@ public class MissionResDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MissionDetailDTO {
+        private Long memberMissionId;
         private Long missionId;
-        private String storeName; // 가게 이름
-        private Integer reward;    // 리워드 포인트
-        private String deadline;  // 마감 기한
-        private String missionSpec; // 미션 내용
+        private String storeName;
+        private String missionSpec;
+        private String rewardPoint;
+        private MissionStatus status;
     }
 
     @Builder
@@ -36,8 +44,8 @@ public class MissionResDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MissionCompleteResultDTO {
-        private Long missionId;       // 완료된 미션 식별자
-        private String status;        // 변경된 상태 (예: COMPLETED)
-        private LocalDateTime completedAt; // 완료 처리된 시각
+        private Long missionId;
+        private String status;
+        private LocalDateTime completedAt;
     }
 }

@@ -1,14 +1,14 @@
 package com.example.umc_study.domain.mission.controller;
 
-import com.example.umc_study.domain.mission.dto.MissionReqDTO;
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
 import com.example.umc_study.domain.mission.enums.MissionStatus;
-import com.example.umc_study.domain.mission.exception.code.MissionSuccessCode;
 import com.example.umc_study.domain.mission.service.MissionService;
 import com.example.umc_study.global.apiPayload.ApiResponse;
-import com.example.umc_study.global.code.BaseSuccessCode;
 import com.example.umc_study.global.code.GeneralSuccessCode;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,11 +21,10 @@ public class MissionController {
     @GetMapping("/me")
     public ApiResponse<MissionResDTO.MissionListDTO> getMyMissions(
             @RequestParam(name = "memberId") Long memberId,
-            @RequestParam(name = "status") MissionStatus status
+            @RequestParam(name = "status") MissionStatus status,
+            @ParameterObject @PageableDefault(size = 10) Pageable pageable
     ) {
-        // Service에서 Enum 값에 따라 필터링된 결과를 가져옴
-        MissionResDTO.MissionListDTO result = missionService.getMyMissions(status);
-
+        MissionResDTO.MissionListDTO result = missionService.getMyMissions(memberId, status, pageable);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 
@@ -34,9 +33,7 @@ public class MissionController {
             @PathVariable(name = "missionId") Long missionId,
             @RequestParam(name = "memberId") Long memberId
     ) {
-        // Service 단에서 해당 ID의 미션 상태를 'COMPLETED'로 변경하는 로직을 수행
         MissionResDTO.MissionCompleteResultDTO result = missionService.completeMission(missionId);
-
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
     }
 }
