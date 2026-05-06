@@ -32,7 +32,7 @@ public class MemberService {
     public String deleteUser(
 
     ) {
-        memberRepository.deleteByName("test");
+        // memberRepository.deleteByName("test");
         return "OK";
     }
 
@@ -63,5 +63,14 @@ public class MemberService {
 
         // 컨버터를 이용해서 응답 DTO 생성 & return
         return MemberConverter.toGetInfo(member);
+    }
+
+    @Transactional
+    public MemberResDTO.JoinResultDTO joinMember(MemberReqDTO.JoinDTO request) {
+        // TODO: 구현 필요. 현재는 컴파일 에러를 막기 위한 더미 반환
+        return MemberResDTO.JoinResultDTO.builder()
+                .memberId(1L)
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
     }
 }

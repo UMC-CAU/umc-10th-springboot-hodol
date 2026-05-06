@@ -45,4 +45,11 @@ public class Review extends BaseEntity {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     @Builder.Default
     private List<ReviewPhoto> reviewPhotoList = new ArrayList<>();
+
+    public void assignReply(Reply reply) {
+        this.reply = reply;
+        if (reply != null && reply.getReview() != this) {
+            reply.assignReview(this);
+        }
+    }
 }

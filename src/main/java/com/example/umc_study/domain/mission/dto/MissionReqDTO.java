@@ -14,9 +14,9 @@ public class MissionReqDTO {
     // 2. 관리자가 미션을 새로 등록할 때 (예시)
 
     public record CreateMissionDTO (
-        String title;       // 미션 제목
-        String missionSpec; // 상세 내용
-        Integer reward;     // 보상 포인트
-        String deadline;    // 마감 기한 (LocalDate 등을 써도 됨)
+        String title,      // 미션 제목
+        String missionSpec, // 상세 내용
+        Integer reward,     // 보상 포인트
+        String deadline    // 마감 기한 (LocalDate 등을 써도 됨)
     ){}
 }

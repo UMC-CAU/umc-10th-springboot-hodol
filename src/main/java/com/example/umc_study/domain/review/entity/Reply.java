@@ -21,4 +21,8 @@ public class Reply extends BaseEntity {
 
     @OneToOne(mappedBy = "reply")
     private Review review;
+
+    public void assignReview(Review review) {
+        this.review = review;
+    }
 }

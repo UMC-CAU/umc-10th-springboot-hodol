@@ -30,49 +30,39 @@ public class Member extends BaseEntity {
     private Long id;
 
     @Column(nullable = false, name = "name")
-    @Builder.Default
     private String name;
 
     @Column(nullable = false, length = 50)
-    @Builder.Default
     private String email;
 
     @Column(length = 15)
     private String phoneNumber;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Builder.Default
     private String profileUrl;
 
     @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
-    @Builder.Default
     private Integer point;
 
     @Column(nullable = false, name = "gender")
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private Gender gender;
 
     @Column(nullable = false, name = "birth")
-    @Builder.Default
     private LocalDate birth;
 
     @Column(nullable = false, name = "address")
-    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Address address;
 
     @Column(nullable = false, name = "detail_address")
-    @Builder.Default
     private String detailAddress;
 
     @Column(nullable = false, name = "social_uid")
-    @Builder.Default
     private String socialUid;
 
     @Column(nullable = false, name = "social_type")
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private SocialType socialType;
 
     // Member.java 클래스 내부

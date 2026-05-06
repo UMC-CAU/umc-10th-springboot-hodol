@@ -26,4 +26,10 @@ public class MemberResDTO {
             String phoneNumber,
             Integer point
     ){}
+
+    @Builder
+    public record RequestBody(
+            String stringTest,
+            Long longTest
+    ){}
 }
