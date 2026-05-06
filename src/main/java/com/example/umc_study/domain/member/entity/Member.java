@@ -1,8 +1,12 @@
 package com.example.umc_study.domain.member.entity;
 
+import com.example.umc_study.domain.member.entity.mapping.MemberFood;
+import com.example.umc_study.domain.member.entity.mapping.MemberTerm;
 import com.example.umc_study.domain.member.enums.Gender;
 import com.example.umc_study.domain.member.enums.Address;
 
+import com.example.umc_study.domain.member.enums.SocialType;
+import com.example.umc_study.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -17,35 +23,72 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Table(name = "member")
 @Getter
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, name = "name")
+    @Builder.Default
     private String name;
 
     @Column(nullable = false, length = 50)
+    @Builder.Default
     private String email;
 
     @Column(length = 15)
     private String phoneNumber;
 
     @Column(nullable = false, columnDefinition = "TEXT")
+    @Builder.Default
     private String profileUrl;
 
     @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    @Builder.Default
     private Integer point;
 
     @Column(nullable = false, name = "gender")
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Gender gender;
 
     @Column(nullable = false, name = "birth")
+    @Builder.Default
     private LocalDate birth;
 
     @Column(nullable = false, name = "address")
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Address address;
+
+    @Column(nullable = false, name = "detail_address")
+    @Builder.Default
+    private String detailAddress;
+
+    @Column(nullable = false, name = "social_uid")
+    @Builder.Default
+    private String socialUid;
+
+    @Column(nullable = false, name = "social_type")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private SocialType socialType;
+
+    // Member.java 클래스 내부
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<MemberFood> memberFoodList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<MemberTerm> memberTermList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<com.example.umc_study.domain.review.entity.Review> reviewList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<com.example.umc_study.domain.mission.entity.mapping.MemberMission> memberMissionList = new ArrayList<>();
 }
