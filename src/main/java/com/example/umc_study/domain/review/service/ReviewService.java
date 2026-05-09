@@ -15,7 +15,6 @@ import com.example.umc_study.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +27,6 @@ public class ReviewService {
 
     @Transactional
     public ReviewResDTO.CreateResultDTO createReview(Long storeId, ReviewReqDTO.CreateReviewDTO request) {
-        validateRequest(request);
-
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new ReviewException(ReviewErrorCode.REVIEW_MEMBER_NOT_FOUND));
 
@@ -43,19 +40,5 @@ public class ReviewService {
         Review newReview = ReviewConverter.toReview(request, member, store, emptyReply);
         Review savedReview = reviewRepository.save(newReview);
         return ReviewConverter.toCreateResultDTO(savedReview);
-    }
-
-    private void validateRequest(ReviewReqDTO.CreateReviewDTO request) {
-        if (request.getMemberId() == null) {
-            throw new ReviewException(ReviewErrorCode.REVIEW_MEMBER_ID_REQUIRED);
-        }
-
-        if (request.getScore() == null || request.getScore() < 0.0f || request.getScore() > 5.0f) {
-            throw new ReviewException(ReviewErrorCode.REVIEW_SCORE_INVALID);
-        }
-
-        if (!StringUtils.hasText(request.getBody())) {
-            throw new ReviewException(ReviewErrorCode.REVIEW_BODY_REQUIRED);
-        }
     }
 }

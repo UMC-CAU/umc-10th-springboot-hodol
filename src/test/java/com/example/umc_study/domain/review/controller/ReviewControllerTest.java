@@ -108,6 +108,28 @@ class ReviewControllerTest {
                 .andExpect(jsonPath("$.code").value("REVIEW404_1"));
     }
 
+    @Test
+    @DisplayName("create review returns bad request when body is blank")
+    void createReviewFailsWhenBodyIsBlank() throws Exception {
+        Member member = memberRepository.save(createMember());
+        Store store = storeRepository.save(createStore());
+
+        String requestBody = """
+                {
+                  "memberId": %d,
+                  "score": 4.0,
+                  "body": "   "
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("REVIEW400_3"));
+    }
+
     private Member createMember() {
         return Member.builder()
                 .name("reviewer")

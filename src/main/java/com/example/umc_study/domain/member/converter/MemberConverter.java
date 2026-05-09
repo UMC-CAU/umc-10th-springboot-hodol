@@ -30,25 +30,19 @@ public class MemberConverter {
     }
 
     public static MyPageResponseDTO toMyPageResponse(Member member, long reviewCount) {
-        return MyPageResponseDTO.builder()
-                .profile(
-                        MyPageResponseDTO.ProfileInfo.builder()
-                                .nickname(member.getName())
-                                .email(member.getEmail())
-                                .phoneInfo(
-                                        MyPageResponseDTO.PhoneInfo.builder()
-                                                .phoneNumber(member.getPhoneNumber())
-                                                .verified(StringUtils.hasText(member.getPhoneNumber()))
-                                                .build()
-                                )
-                                .build()
+        return new MyPageResponseDTO(
+                new MyPageResponseDTO.ProfileInfo(
+                        member.getName(),
+                        member.getEmail(),
+                        new MyPageResponseDTO.PhoneInfo(
+                                member.getPhoneNumber(),
+                                StringUtils.hasText(member.getPhoneNumber())
+                        )
+                ),
+                new MyPageResponseDTO.ActivitySummary(
+                        member.getPoint(),
+                        reviewCount
                 )
-                .activitySummary(
-                        MyPageResponseDTO.ActivitySummary.builder()
-                                .currentPointBalance(member.getPoint())
-                                .reviewCount(reviewCount)
-                                .build()
-                )
-                .build();
+        );
     }
 }

@@ -1,44 +1,26 @@
 package com.example.umc_study.domain.member.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+public record MyPageResponseDTO(
+        ProfileInfo profile,
+        ActivitySummary activitySummary
+) {
 
-@Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class MyPageResponseDTO {
-
-    private ProfileInfo profile;
-    private ActivitySummary activitySummary;
-
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ProfileInfo {
-        private String nickname;
-        private String email;
-        private PhoneInfo phoneInfo;
+    public record ProfileInfo(
+            String nickname,
+            String email,
+            PhoneInfo phoneInfo
+    ) {
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class PhoneInfo {
-        private String phoneNumber;
-        private Boolean verified;
+    public record PhoneInfo(
+            String phoneNumber,
+            Boolean verified
+    ) {
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ActivitySummary {
-        private Integer currentPointBalance;
-        private Long reviewCount;
+    public record ActivitySummary(
+            Integer currentPointBalance,
+            Long reviewCount
+    ) {
     }
 }
