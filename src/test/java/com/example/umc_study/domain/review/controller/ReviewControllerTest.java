@@ -66,7 +66,7 @@ class ReviewControllerTest {
                         .content(requestBody))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.isSuccess").value(true))
-                .andExpect(jsonPath("$.code").value("REVIEW201"))
+                .andExpect(jsonPath("$.code").value("COMMON200_1"))
                 .andExpect(jsonPath("$.result.reviewId").isNumber())
                 .andExpect(jsonPath("$.result.createdAt").isNotEmpty())
                 .andReturn()
@@ -130,10 +130,135 @@ class ReviewControllerTest {
                 .andExpect(jsonPath("$.code").value("REVIEW400_3"));
     }
 
+    @Test
+    @DisplayName("get my reviews supports id cursor pagination")
+    void getMyReviewsByIdCursor() throws Exception {
+        Member member = memberRepository.save(createMember("reviewer-id", "reviewer-id@example.com", "social-uid-id"));
+        Member otherMember = memberRepository.save(createMember("other-reviewer", "other-reviewer@example.com", "social-uid-other"));
+        Store firstStore = storeRepository.save(createStore("UMC Kitchen"));
+        Store secondStore = storeRepository.save(createStore("UMC Cafe"));
+
+        Review firstReview = reviewRepository.save(createReview(member, firstStore, "First review", 3.5f, "First body"));
+        Review secondReview = reviewRepository.save(createReview(member, secondStore, "Second review", 4.0f, "Second body"));
+        Review thirdReview = reviewRepository.save(createReview(member, firstStore, "Third review", 4.5f, "Third body"));
+        reviewRepository.save(createReview(otherMember, firstStore, "Other review", 5.0f, "Other body"));
+
+        String firstRequestBody = """
+                {
+                  "memberId": %d,
+                  "size": 2,
+                  "sortType": "ID"
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(firstRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("COMMON200_1"))
+                .andExpect(jsonPath("$.result.reviewList[0].reviewId").value(thirdReview.getId()))
+                .andExpect(jsonPath("$.result.reviewList[0].storeName").value("UMC Kitchen"))
+                .andExpect(jsonPath("$.result.reviewList[1].reviewId").value(secondReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.nextCursorId").value(secondReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.nextCursorScore").isEmpty())
+                .andExpect(jsonPath("$.result.pagination.hasNext").value(true));
+
+        String secondRequestBody = """
+                {
+                  "memberId": %d,
+                  "cursorId": %d,
+                  "size": 2,
+                  "sortType": "ID"
+                }
+                """.formatted(member.getId(), secondReview.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.reviewList[0].reviewId").value(firstReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("get my reviews supports score cursor pagination")
+    void getMyReviewsByScoreCursor() throws Exception {
+        Member member = memberRepository.save(createMember("reviewer-score", "reviewer-score@example.com", "social-uid-score"));
+        Store store = storeRepository.save(createStore("UMC Score"));
+
+        Review olderTieReview = reviewRepository.save(createReview(member, store, "Older tie", 4.5f, "Older tie body"));
+        Review topReview = reviewRepository.save(createReview(member, store, "Top review", 5.0f, "Top review body"));
+        Review newerTieReview = reviewRepository.save(createReview(member, store, "Newer tie", 4.5f, "Newer tie body"));
+        Review lowReview = reviewRepository.save(createReview(member, store, "Low review", 3.0f, "Low review body"));
+
+        String firstRequestBody = """
+                {
+                  "memberId": %d,
+                  "size": 2,
+                  "sortType": "SCORE"
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(firstRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.reviewList[0].reviewId").value(topReview.getId()))
+                .andExpect(jsonPath("$.result.reviewList[0].score").value(5.0))
+                .andExpect(jsonPath("$.result.reviewList[1].reviewId").value(newerTieReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.nextCursorId").value(newerTieReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.nextCursorScore").value(4.5))
+                .andExpect(jsonPath("$.result.pagination.hasNext").value(true));
+
+        String secondRequestBody = """
+                {
+                  "memberId": %d,
+                  "cursorId": %d,
+                  "cursorScore": 4.5,
+                  "size": 2,
+                  "sortType": "SCORE"
+                }
+                """.formatted(member.getId(), newerTieReview.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(secondRequestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.reviewList[0].reviewId").value(olderTieReview.getId()))
+                .andExpect(jsonPath("$.result.reviewList[1].reviewId").value(lowReview.getId()))
+                .andExpect(jsonPath("$.result.pagination.hasNext").value(false));
+    }
+
+    @Test
+    @DisplayName("get my reviews returns bad request when score cursor is incomplete")
+    void getMyReviewsFailsWhenScoreCursorIsIncomplete() throws Exception {
+        Member member = memberRepository.save(createMember());
+
+        String requestBody = """
+                {
+                  "memberId": %d,
+                  "cursorScore": 4.5,
+                  "size": 2,
+                  "sortType": "SCORE"
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("REVIEW400_4"));
+    }
+
     private Member createMember() {
+        return createMember("reviewer", "reviewer@example.com", "social-uid-1");
+    }
+
+    private Member createMember(String name, String email, String socialUid) {
         return Member.builder()
-                .name("reviewer")
-                .email("reviewer@example.com")
+                .name(name)
+                .email(email)
                 .phoneNumber("01012345678")
                 .profileUrl("https://example.com/profile.png")
                 .point(0)
@@ -141,16 +266,30 @@ class ReviewControllerTest {
                 .birth(LocalDate.of(2000, 1, 1))
                 .address(Address.values()[0])
                 .detailAddress("101-1001")
-                .socialUid("social-uid-1")
+                .socialUid(socialUid)
                 .socialType(SocialType.KAKAO)
                 .build();
     }
 
     private Store createStore() {
+        return createStore("UMC Kitchen");
+    }
+
+    private Store createStore(String name) {
         return Store.builder()
-                .name("UMC Kitchen")
+                .name(name)
                 .address("Seoul")
                 .score(4.2f)
+                .build();
+    }
+
+    private Review createReview(Member member, Store store, String title, float score, String body) {
+        return Review.builder()
+                .title(title)
+                .score(score)
+                .body(body)
+                .member(member)
+                .store(store)
                 .build();
     }
 }

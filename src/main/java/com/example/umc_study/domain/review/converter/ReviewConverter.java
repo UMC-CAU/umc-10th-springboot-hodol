@@ -6,6 +6,8 @@ import com.example.umc_study.domain.review.dto.ReviewReqDTO;
 import com.example.umc_study.domain.review.dto.ReviewResDTO;
 import com.example.umc_study.domain.review.entity.Reply;
 import com.example.umc_study.domain.review.entity.Review;
+import com.example.umc_study.domain.review.enums.ReviewSortType;
+import org.springframework.data.domain.Slice;
 import org.springframework.util.StringUtils;
 
 public class ReviewConverter {
@@ -28,6 +30,39 @@ public class ReviewConverter {
     public static ReviewResDTO.CreateResultDTO toCreateResultDTO(Review review) {
         return ReviewResDTO.CreateResultDTO.builder()
                 .reviewId(review.getId())
+                .createdAt(review.getCreatedAt())
+                .build();
+    }
+
+    public static ReviewResDTO.MyReviewListDTO toMyReviewListDTO(Slice<Review> reviewSlice, ReviewSortType sortType) {
+        java.util.List<ReviewResDTO.MyReviewDetailDTO> reviewList = reviewSlice.getContent().stream()
+                .map(ReviewConverter::toMyReviewDetailDTO)
+                .toList();
+
+        Review lastReview = reviewSlice.hasNext() && !reviewSlice.isEmpty()
+                ? reviewSlice.getContent().get(reviewSlice.getNumberOfElements() - 1)
+                : null;
+
+        return ReviewResDTO.MyReviewListDTO.builder()
+                .reviewList(reviewList)
+                .pagination(
+                        ReviewResDTO.CursorPaginationDTO.builder()
+                                .nextCursorId(lastReview != null ? lastReview.getId() : null)
+                                .nextCursorScore(lastReview != null && sortType == ReviewSortType.SCORE ? lastReview.getScore() : null)
+                                .size(reviewSlice.getSize())
+                                .hasNext(reviewSlice.hasNext())
+                                .build()
+                )
+                .build();
+    }
+
+    private static ReviewResDTO.MyReviewDetailDTO toMyReviewDetailDTO(Review review) {
+        return ReviewResDTO.MyReviewDetailDTO.builder()
+                .reviewId(review.getId())
+                .storeName(review.getStore().getName())
+                .title(review.getTitle())
+                .body(review.getBody())
+                .score(review.getScore())
                 .createdAt(review.getCreatedAt())
                 .build();
     }
