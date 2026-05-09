@@ -4,6 +4,7 @@ import com.example.umc_study.domain.member.exception.MemberException;
 import com.example.umc_study.domain.member.exception.code.MemberErrorCode;
 import com.example.umc_study.domain.member.repository.MemberRepository;
 import com.example.umc_study.domain.mission.converter.MissionConverter;
+import com.example.umc_study.domain.mission.dto.MissionReqDTO;
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
 import com.example.umc_study.domain.mission.entity.Mission;
 import com.example.umc_study.domain.mission.entity.mapping.MemberMission;
@@ -11,6 +12,7 @@ import com.example.umc_study.domain.mission.enums.HomeMissionSortType;
 import com.example.umc_study.domain.mission.enums.MissionStatus;
 import com.example.umc_study.domain.mission.repository.MemberMissionRepository;
 import com.example.umc_study.domain.mission.repository.MissionRepository;
+import com.example.umc_study.global.common.OffsetBasedPageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +34,31 @@ public class MissionService {
     private final MemberMissionRepository memberMissionRepository;
     private final MemberRepository memberRepository;
     private final MissionRepository missionRepository;
+
+    public MissionResDTO.ProgressMissionListDTO getMyProgressMissions(
+            MissionReqDTO.GetProgressMissionListDTO request
+    ) {
+        memberRepository.findById(request.memberId())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = new OffsetBasedPageRequest(
+                request.offset(),
+                request.limit(),
+                getSort(MissionStatus.CHALLENGING)
+        );
+
+        Page<MemberMission> memberMissionPage = memberMissionRepository.findAllByMember_IdAndStatus(
+                request.memberId(),
+                MissionStatus.CHALLENGING,
+                pageable
+        );
+
+        return MissionConverter.toProgressMissionListDTO(
+                memberMissionPage,
+                request.offset(),
+                request.limit()
+        );
+    }
 
     public MissionResDTO.MissionListDTO getMyMissions(Long memberId, MissionStatus status, Pageable pageable) {
         memberRepository.findById(memberId)

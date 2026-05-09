@@ -26,6 +26,15 @@ public class MissionResDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class ProgressMissionListDTO {
+        private List<MissionDetailDTO> missionList;
+        private OffsetPaginationDTO pagination;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class MissionDetailDTO {
         private Long memberMissionId;
         private Long missionId;
@@ -43,6 +52,18 @@ public class MissionResDTO {
         private MissionProgressDTO progress;
         private List<HomeMissionDetailDTO> missionList;
         private Pagination pagination;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OffsetPaginationDTO {
+        private Integer offset;
+        private Integer limit;
+        private Integer listSize;
+        private Long totalElements;
+        private Boolean hasNext;
     }
 
     @Builder

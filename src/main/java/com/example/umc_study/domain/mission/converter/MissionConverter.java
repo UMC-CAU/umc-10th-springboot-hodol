@@ -23,6 +23,29 @@ public class MissionConverter {
                 .build();
     }
 
+    public static MissionResDTO.ProgressMissionListDTO toProgressMissionListDTO(
+            Page<MemberMission> memberMissionPage,
+            int offset,
+            int limit
+    ) {
+        List<MissionResDTO.MissionDetailDTO> missionList = memberMissionPage.getContent().stream()
+                .map(MissionConverter::toMissionDetailDTO)
+                .toList();
+
+        return MissionResDTO.ProgressMissionListDTO.builder()
+                .missionList(missionList)
+                .pagination(
+                        MissionResDTO.OffsetPaginationDTO.builder()
+                                .offset(offset)
+                                .limit(limit)
+                                .listSize(missionList.size())
+                                .totalElements(memberMissionPage.getTotalElements())
+                                .hasNext(memberMissionPage.hasNext())
+                                .build()
+                )
+                .build();
+    }
+
     public static MissionResDTO.MissionDetailDTO toMissionDetailDTO(MemberMission memberMission) {
         return MissionResDTO.MissionDetailDTO.builder()
                 .memberMissionId(memberMission.getId())

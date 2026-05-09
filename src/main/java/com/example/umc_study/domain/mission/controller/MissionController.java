@@ -1,11 +1,13 @@
 package com.example.umc_study.domain.mission.controller;
 
+import com.example.umc_study.domain.mission.dto.MissionReqDTO;
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
 import com.example.umc_study.domain.mission.enums.HomeMissionSortType;
 import com.example.umc_study.domain.mission.enums.MissionStatus;
 import com.example.umc_study.domain.mission.service.MissionService;
 import com.example.umc_study.global.apiPayload.ApiResponse;
 import com.example.umc_study.global.code.GeneralSuccessCode;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,14 @@ import org.springframework.web.bind.annotation.*;
 public class MissionController {
 
     private final MissionService missionService;
+
+    @PostMapping("/me/progress")
+    public ApiResponse<MissionResDTO.ProgressMissionListDTO> getMyProgressMissions(
+            @Valid @RequestBody MissionReqDTO.GetProgressMissionListDTO request
+    ) {
+        MissionResDTO.ProgressMissionListDTO result = missionService.getMyProgressMissions(request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);
+    }
 
     @GetMapping("/home")
     public ApiResponse<MissionResDTO.HomeMissionListDTO> getHomeMissions(
