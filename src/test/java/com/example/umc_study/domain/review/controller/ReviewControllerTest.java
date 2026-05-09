@@ -131,6 +131,27 @@ class ReviewControllerTest {
     }
 
     @Test
+    @DisplayName("create review returns bad request when member id is not positive")
+    void createReviewFailsWhenMemberIdIsInvalid() throws Exception {
+        Store store = storeRepository.save(createStore());
+
+        String requestBody = """
+                {
+                  "memberId": 0,
+                  "score": 4.0,
+                  "body": "Still should fail."
+                }
+                """;
+
+        mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("REVIEW400_5"));
+    }
+
+    @Test
     @DisplayName("get my reviews supports id cursor pagination")
     void getMyReviewsByIdCursor() throws Exception {
         Member member = memberRepository.save(createMember("reviewer-id", "reviewer-id@example.com", "social-uid-id"));
@@ -249,6 +270,27 @@ class ReviewControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
                 .andExpect(jsonPath("$.code").value("REVIEW400_4"));
+    }
+
+    @Test
+    @DisplayName("get my reviews returns bad request when size is not positive")
+    void getMyReviewsFailsWhenSizeIsInvalid() throws Exception {
+        Member member = memberRepository.save(createMember());
+
+        String requestBody = """
+                {
+                  "memberId": %d,
+                  "size": 0,
+                  "sortType": "ID"
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/reviews/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("REVIEW400_6"));
     }
 
     private Member createMember() {

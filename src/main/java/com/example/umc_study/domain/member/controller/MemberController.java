@@ -27,7 +27,7 @@ public class MemberController {
 
     @PostMapping("/signup")
     public ApiResponse<MemberResDTO.JoinResultDTO> join(
-            @RequestBody MemberReqDTO.JoinDTO request
+            @Valid @RequestBody MemberReqDTO.JoinDTO request
     ) {
         MemberResDTO.JoinResultDTO result = memberService.joinMember(request);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);

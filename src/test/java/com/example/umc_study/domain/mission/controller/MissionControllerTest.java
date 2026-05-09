@@ -152,6 +152,27 @@ class MissionControllerTest {
     }
 
     @Test
+    @DisplayName("get my progress missions returns bad request when offset is negative")
+    void getMyProgressMissionsFailsWhenOffsetIsNegative() throws Exception {
+        Member member = memberRepository.save(createMember("progress-invalid", "progress-invalid@example.com"));
+
+        String requestBody = """
+                {
+                  "memberId": %d,
+                  "offset": -1,
+                  "limit": 10
+                }
+                """.formatted(member.getId());
+
+        mockMvc.perform(post("/api/missions/me/progress")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("MISSION400_4"));
+    }
+
+    @Test
     @DisplayName("get my completed missions sorts by latest success time")
     void getMyCompletedMissions() throws Exception {
         Member member = memberRepository.save(createMember("completed-1", "completed1@example.com"));

@@ -14,39 +14,40 @@ public class ReviewReqDTO {
     @Getter
     @NoArgsConstructor
     public static class CreateReviewDTO {
-        @NotNull
+        @NotNull(message = "memberId is required.")
+        @Positive(message = "memberId must be a positive number.")
         private Long memberId;
 
         private String title;
 
-        @NotNull
-        @DecimalMin("0.0")
-        @DecimalMax("5.0")
+        @NotNull(message = "score is required.")
+        @DecimalMin(value = "0.0", message = "score must be between 0 and 5.")
+        @DecimalMax(value = "5.0", message = "score must be between 0 and 5.")
         private Float score;
 
-        @NotBlank
+        @NotBlank(message = "body is required.")
         private String body;
     }
 
     @Getter
     @NoArgsConstructor
     public static class GetMyReviewListDTO {
-        @NotNull
-        @Positive
+        @NotNull(message = "memberId is required.")
+        @Positive(message = "memberId must be a positive number.")
         private Long memberId;
 
-        @Positive
+        @Positive(message = "cursorId must be a positive number.")
         private Long cursorId;
 
-        @DecimalMin("0.0")
-        @DecimalMax("5.0")
+        @DecimalMin(value = "0.0", message = "cursorScore must be between 0 and 5.")
+        @DecimalMax(value = "5.0", message = "cursorScore must be between 0 and 5.")
         private Float cursorScore;
 
-        @NotNull
-        @Positive
+        @NotNull(message = "size is required.")
+        @Positive(message = "size must be a positive number.")
         private Integer size = 10;
 
-        @NotNull
+        @NotNull(message = "sortType is required.")
         private ReviewSortType sortType = ReviewSortType.ID;
     }
 }

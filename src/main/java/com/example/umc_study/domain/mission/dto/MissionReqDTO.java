@@ -12,9 +12,15 @@ public class MissionReqDTO {
     }
 
     public record GetProgressMissionListDTO(
-            @NotNull Long memberId,
-            @NotNull @PositiveOrZero Integer offset,
-            @NotNull @Positive Integer limit
+            @NotNull(message = "memberId is required.")
+            @Positive(message = "memberId must be a positive number.")
+            Long memberId,
+            @NotNull(message = "offset is required.")
+            @PositiveOrZero(message = "offset must be zero or a positive number.")
+            Integer offset,
+            @NotNull(message = "limit is required.")
+            @Positive(message = "limit must be a positive number.")
+            Integer limit
     ) {
     }
 
