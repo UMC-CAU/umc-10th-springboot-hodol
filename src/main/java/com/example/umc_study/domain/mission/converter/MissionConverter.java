@@ -3,6 +3,7 @@ package com.example.umc_study.domain.mission.converter;
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
 import com.example.umc_study.domain.mission.entity.Mission;
 import com.example.umc_study.domain.mission.entity.mapping.MemberMission;
+import com.example.umc_study.global.common.Pagination;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDate;
@@ -18,13 +19,7 @@ public class MissionConverter {
 
         return MissionResDTO.MissionListDTO.builder()
                 .missionList(missionList)
-                .listSize(missionList.size())
-                .pageNumber(memberMissionPage.getNumber())
-                .pageSize(memberMissionPage.getSize())
-                .totalPages(memberMissionPage.getTotalPages())
-                .totalElements(memberMissionPage.getTotalElements())
-                .first(memberMissionPage.isFirst())
-                .last(memberMissionPage.isLast())
+                .pagination(toPagination(memberMissionPage))
                 .build();
     }
 
@@ -58,13 +53,7 @@ public class MissionConverter {
                                 .build()
                 )
                 .missionList(missionList)
-                .listSize(missionList.size())
-                .pageNumber(missionPage.getNumber())
-                .pageSize(missionPage.getSize())
-                .totalPages(missionPage.getTotalPages())
-                .totalElements(missionPage.getTotalElements())
-                .first(missionPage.isFirst())
-                .last(missionPage.isLast())
+                .pagination(toPagination(missionPage))
                 .build();
     }
 
@@ -89,5 +78,17 @@ public class MissionConverter {
             return "D-" + days;
         }
         return "D+" + Math.abs(days);
+    }
+
+    private static Pagination toPagination(Page<?> page) {
+        return Pagination.builder()
+                .listSize(page.getNumberOfElements())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .build();
     }
 }

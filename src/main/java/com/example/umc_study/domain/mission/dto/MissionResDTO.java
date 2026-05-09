@@ -1,6 +1,7 @@
 package com.example.umc_study.domain.mission.dto;
 
 import com.example.umc_study.domain.mission.enums.MissionStatus;
+import com.example.umc_study.global.common.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,13 +19,7 @@ public class MissionResDTO {
     @AllArgsConstructor
     public static class MissionListDTO {
         private List<MissionDetailDTO> missionList;
-        private Integer listSize;
-        private Integer pageNumber;
-        private Integer pageSize;
-        private Integer totalPages;
-        private Long totalElements;
-        private Boolean first;
-        private Boolean last;
+        private Pagination pagination;
     }
 
     @Builder
@@ -47,13 +42,7 @@ public class MissionResDTO {
     public static class HomeMissionListDTO {
         private MissionProgressDTO progress;
         private List<HomeMissionDetailDTO> missionList;
-        private Integer listSize;
-        private Integer pageNumber;
-        private Integer pageSize;
-        private Integer totalPages;
-        private Long totalElements;
-        private Boolean first;
-        private Boolean last;
+        private Pagination pagination;
     }
 
     @Builder

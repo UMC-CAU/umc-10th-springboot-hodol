@@ -89,7 +89,7 @@ class MissionHomeControllerTest {
                 .andExpect(jsonPath("$.result.progress.currentMissionCount").value(1))
                 .andExpect(jsonPath("$.result.progress.targetMissionCount").value(10))
                 .andExpect(jsonPath("$.result.progress.targetRewardPoint").value("1000P"))
-                .andExpect(jsonPath("$.result.totalElements").value(2))
+                .andExpect(jsonPath("$.result.pagination.totalElements").value(2))
                 .andExpect(jsonPath("$.result.missionList[0].storeName").value("UMC China"))
                 .andExpect(jsonPath("$.result.missionList[0].category").value("Chinese"))
                 .andExpect(jsonPath("$.result.missionList[1].storeName").value("UMC Pasta"));
