@@ -1,7 +1,8 @@
 package com.example.umc_study.domain.member.dto;
 
 import com.example.umc_study.domain.member.enums.Gender;
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.time.LocalDate;
 
@@ -20,6 +21,8 @@ public class MemberReqDTO {
     ){}
 
     public record GetInfo(
+            @NotNull(message = "member id is required.")
+            @Positive(message = "member id must be a positive number.")
             Long id
     ){}
 

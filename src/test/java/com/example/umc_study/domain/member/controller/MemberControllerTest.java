@@ -86,6 +86,39 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.code").value("MEMBER404_1"));
     }
 
+    @Test
+    @DisplayName("my page returns bad request when member id is missing")
+    void getMyPageFailsWhenMemberIdMissing() throws Exception {
+        String requestBody = """
+                {
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("MEMBER400_1"));
+    }
+
+    @Test
+    @DisplayName("my page returns bad request when member id is not positive")
+    void getMyPageFailsWhenMemberIdIsInvalid() throws Exception {
+        String requestBody = """
+                {
+                  "id": 0
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("MEMBER400_2"));
+    }
+
     private Member createMember() {
         return Member.builder()
                 .name("my-nickname")

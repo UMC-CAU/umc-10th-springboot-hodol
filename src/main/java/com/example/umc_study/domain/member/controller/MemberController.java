@@ -6,6 +6,7 @@ import com.example.umc_study.domain.member.dto.MyPageResponseDTO;
 import com.example.umc_study.domain.member.service.MemberService;
 import com.example.umc_study.global.apiPayload.ApiResponse;
 import com.example.umc_study.global.code.GeneralSuccessCode;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class MemberController {
 
     @PostMapping("/v1/users/me")
     public ApiResponse<MyPageResponseDTO> getMyPage(
-            @RequestBody MemberReqDTO.GetInfo dto
+            @Valid @RequestBody MemberReqDTO.GetInfo dto
     ){
         MyPageResponseDTO result = memberService.getMyPage(dto);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);

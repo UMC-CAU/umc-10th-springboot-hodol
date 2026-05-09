@@ -1,5 +1,7 @@
 package com.example.umc_study.global.handler;
 
+import com.example.umc_study.domain.member.dto.MemberReqDTO;
+import com.example.umc_study.domain.member.exception.code.MemberErrorCode;
 import com.example.umc_study.domain.review.dto.ReviewReqDTO;
 import com.example.umc_study.domain.review.exception.code.ReviewErrorCode;
 import com.example.umc_study.global.apiPayload.ApiResponse;
@@ -66,6 +68,15 @@ public class GeneralExceptionAdvice {
                 case "body" -> ReviewErrorCode.REVIEW_BODY_REQUIRED;
                 default -> GeneralErrorCode.BAD_REQUEST;
             };
+        }
+
+        if (target instanceof MemberReqDTO.GetInfo && fieldError != null) {
+            if ("id".equals(fieldError.getField())) {
+                if ("NotNull".equals(fieldError.getCode())) {
+                    return MemberErrorCode.MEMBER_ID_REQUIRED;
+                }
+                return MemberErrorCode.MEMBER_ID_INVALID;
+            }
         }
 
         return GeneralErrorCode.BAD_REQUEST;
