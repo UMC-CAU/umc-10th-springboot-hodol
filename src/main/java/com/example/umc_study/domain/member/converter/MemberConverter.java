@@ -1,7 +1,9 @@
 package com.example.umc_study.domain.member.converter;
 
 import com.example.umc_study.domain.member.dto.MemberResDTO;
+import com.example.umc_study.domain.member.dto.MyPageResponseDTO;
 import com.example.umc_study.domain.member.entity.Member;
+import org.springframework.util.StringUtils;
 
 public class MemberConverter {
 
@@ -15,7 +17,6 @@ public class MemberConverter {
                 .build();
     }
 
-    // 마이페이지
     public static MemberResDTO.GetInfo toGetInfo(
             Member member
     ){
@@ -26,5 +27,22 @@ public class MemberConverter {
                 .phoneNumber(member.getPhoneNumber())
                 .profileUrl(member.getProfileUrl())
                 .build();
+    }
+
+    public static MyPageResponseDTO toMyPageResponse(Member member, long reviewCount) {
+        return new MyPageResponseDTO(
+                new MyPageResponseDTO.ProfileInfo(
+                        member.getName(),
+                        member.getEmail(),
+                        new MyPageResponseDTO.PhoneInfo(
+                                member.getPhoneNumber(),
+                                StringUtils.hasText(member.getPhoneNumber())
+                        )
+                ),
+                new MyPageResponseDTO.ActivitySummary(
+                        member.getPoint(),
+                        reviewCount
+                )
+        );
     }
 }

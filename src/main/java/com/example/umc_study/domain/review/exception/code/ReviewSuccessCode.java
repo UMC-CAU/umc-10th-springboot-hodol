@@ -8,13 +8,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ReviewSuccessCode implements BaseSuccessCode {
-
-    OK(HttpStatus.OK, "MISSION200", "요청에 성공하였습니다.")
-    ;
+    REVIEW_CREATED(HttpStatus.CREATED, "REVIEW201", "Review created successfully.");
 
     private final HttpStatus status;
     private final String code;
     private final String message;
-
-
 }

@@ -1,8 +1,12 @@
 package com.example.umc_study.domain.member.entity;
 
+import com.example.umc_study.domain.member.entity.mapping.MemberFood;
+import com.example.umc_study.domain.member.entity.mapping.MemberTerm;
 import com.example.umc_study.domain.member.enums.Gender;
 import com.example.umc_study.domain.member.enums.Address;
 
+import com.example.umc_study.domain.member.enums.SocialType;
+import com.example.umc_study.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -17,7 +23,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Table(name = "member")
 @Getter
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,4 +54,31 @@ public class Member {
     @Column(nullable = false, name = "address")
     @Enumerated(EnumType.STRING)
     private Address address;
+
+    @Column(nullable = false, name = "detail_address")
+    private String detailAddress;
+
+    @Column(nullable = false, name = "social_uid")
+    private String socialUid;
+
+    @Column(nullable = false, name = "social_type")
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType;
+
+    // Member.java 클래스 내부
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<MemberFood> memberFoodList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<MemberTerm> memberTermList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<com.example.umc_study.domain.review.entity.Review> reviewList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<com.example.umc_study.domain.mission.entity.mapping.MemberMission> memberMissionList = new ArrayList<>();
 }
