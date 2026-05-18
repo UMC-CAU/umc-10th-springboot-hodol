@@ -4,13 +4,15 @@ import com.example.umc_study.domain.member.exception.MemberException;
 import com.example.umc_study.domain.member.exception.code.MemberErrorCode;
 import com.example.umc_study.domain.member.repository.MemberRepository;
 import com.example.umc_study.domain.mission.converter.MissionConverter;
+import com.example.umc_study.domain.mission.dto.MissionReqDTO;
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
-import com.example.umc_study.domain.mission.entity.Mission;
-import com.example.umc_study.domain.mission.entity.mapping.MemberMission;
 import com.example.umc_study.domain.mission.enums.HomeMissionSortType;
 import com.example.umc_study.domain.mission.enums.MissionStatus;
 import com.example.umc_study.domain.mission.repository.MemberMissionRepository;
 import com.example.umc_study.domain.mission.repository.MissionRepository;
+import com.example.umc_study.domain.mission.repository.projection.HomeMissionSummaryProjection;
+import com.example.umc_study.domain.mission.repository.projection.MemberMissionSummaryProjection;
+import com.example.umc_study.global.common.OffsetBasedPageRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +35,28 @@ public class MissionService {
     private final MemberRepository memberRepository;
     private final MissionRepository missionRepository;
 
+    public MissionResDTO.ProgressMissionListDTO getMyProgressMissions(
+            MissionReqDTO.GetProgressMissionListDTO request
+    ) {
+        memberRepository.findById(request.memberId())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Pageable pageable = new OffsetBasedPageRequest(
+                request.offset(),
+                request.limit(),
+                getSort(MissionStatus.CHALLENGING)
+        );
+
+        Page<MemberMissionSummaryProjection> memberMissionPage =
+                memberMissionRepository.findMissionSummariesByMemberIdAndStatus(
+                request.memberId(),
+                MissionStatus.CHALLENGING,
+                pageable
+        );
+
+        return MissionConverter.toProgressMissionListDTO(memberMissionPage);
+    }
+
     public MissionResDTO.MissionListDTO getMyMissions(Long memberId, MissionStatus status, Pageable pageable) {
         memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -43,8 +67,8 @@ public class MissionService {
                 getSort(status)
         );
 
-        Page<MemberMission> memberMissionPage =
-                memberMissionRepository.findAllByMember_IdAndStatus(memberId, status, sortedPageable);
+        Page<MemberMissionSummaryProjection> memberMissionPage =
+                memberMissionRepository.findMissionSummariesByMemberIdAndStatus(memberId, status, sortedPageable);
 
         return MissionConverter.toMissionListDTO(memberMissionPage);
     }
@@ -64,7 +88,8 @@ public class MissionService {
                 getHomeSort(sortType)
         );
 
-        Page<Mission> missionPage = missionRepository.findHomeMissions(memberId, regionId, sortedPageable);
+        Page<HomeMissionSummaryProjection> missionPage =
+                missionRepository.findHomeMissionSummaries(memberId, regionId, sortedPageable);
         long currentMissionCount = memberMissionRepository.countByMember_IdAndStatus(memberId, MissionStatus.CHALLENGING);
 
         return MissionConverter.toHomeMissionListDTO(

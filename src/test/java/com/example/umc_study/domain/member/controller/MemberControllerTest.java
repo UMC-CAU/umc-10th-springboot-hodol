@@ -86,6 +86,63 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.code").value("MEMBER404_1"));
     }
 
+    @Test
+    @DisplayName("my page returns bad request when member id is missing")
+    void getMyPageFailsWhenMemberIdMissing() throws Exception {
+        String requestBody = """
+                {
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
+    }
+
+    @Test
+    @DisplayName("my page returns bad request when member id is not positive")
+    void getMyPageFailsWhenMemberIdIsInvalid() throws Exception {
+        String requestBody = """
+                {
+                  "id": 0
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
+    }
+
+    @Test
+    @DisplayName("signup returns bad request when email format is invalid")
+    void joinFailsWhenEmailFormatIsInvalid() throws Exception {
+        String requestBody = """
+                {
+                  "name": "tester",
+                  "password": "secret",
+                  "age": 24,
+                  "email": "invalid-email",
+                  "gender": "FEMALE",
+                  "nickName": "tester-nickname",
+                  "phoneNumber": "01012345678",
+                  "birthDate": "2001-01-01"
+                }
+                """;
+
+        mockMvc.perform(post("/api/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
+    }
+
     private Member createMember() {
         return Member.builder()
                 .name("my-nickname")

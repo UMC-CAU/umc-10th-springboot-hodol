@@ -79,15 +79,74 @@ class MissionControllerTest {
                         .param("size", "2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value(true))
-                .andExpect(jsonPath("$.result.listSize").value(2))
-                .andExpect(jsonPath("$.result.pageNumber").value(0))
-                .andExpect(jsonPath("$.result.pageSize").value(2))
-                .andExpect(jsonPath("$.result.totalPages").value(2))
-                .andExpect(jsonPath("$.result.totalElements").value(3))
+                .andExpect(jsonPath("$.result.pagination.listSize").value(2))
+                .andExpect(jsonPath("$.result.pagination.pageNumber").value(0))
+                .andExpect(jsonPath("$.result.pagination.pageSize").value(2))
+                .andExpect(jsonPath("$.result.pagination.totalPages").value(2))
+                .andExpect(jsonPath("$.result.pagination.totalElements").value(3))
                 .andExpect(jsonPath("$.result.missionList[0].missionSpec").value("Spend over 15000 won with dessert"))
                 .andExpect(jsonPath("$.result.missionList[0].rewardPoint").value("700P"))
                 .andExpect(jsonPath("$.result.missionList[0].status").value("CHALLENGING"))
                 .andExpect(jsonPath("$.result.missionList[1].missionSpec").value("Order two americanos"));
+    }
+
+    @Test
+    @DisplayName("get my progress missions uses query params and offset pagination")
+    void getMyProgressMissionsByOffset() throws Exception {
+        Member member = memberRepository.save(createMember("progress-1", "progress1@example.com"));
+        Store store = storeRepository.save(createStore("Store Progress"));
+
+        Mission firstMission = missionRepository.save(createMission(store, "Spend over 12000 won", 500));
+        Mission secondMission = missionRepository.save(createMission(store, "Order two americanos", 300));
+        Mission thirdMission = missionRepository.save(createMission(store, "Spend over 15000 won with dessert", 700));
+
+        MemberMission first = memberMissionRepository.save(createMemberMission(member, firstMission, MissionStatus.CHALLENGING));
+        MemberMission second = memberMissionRepository.save(createMemberMission(member, secondMission, MissionStatus.CHALLENGING));
+        MemberMission third = memberMissionRepository.save(createMemberMission(member, thirdMission, MissionStatus.CHALLENGING));
+
+        updateMemberMissionTimestamps(first.getId(), LocalDateTime.of(2026, 5, 1, 10, 0), LocalDateTime.of(2026, 5, 1, 10, 0));
+        updateMemberMissionTimestamps(second.getId(), LocalDateTime.of(2026, 5, 2, 10, 0), LocalDateTime.of(2026, 5, 2, 10, 0));
+        updateMemberMissionTimestamps(third.getId(), LocalDateTime.of(2026, 5, 3, 10, 0), LocalDateTime.of(2026, 5, 3, 10, 0));
+
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", member.getId().toString())
+                        .param("offset", "1")
+                        .param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isSuccess").value(true))
+                .andExpect(jsonPath("$.result.pagination.offset").value(1))
+                .andExpect(jsonPath("$.result.pagination.limit").value(1))
+                .andExpect(jsonPath("$.result.pagination.listSize").value(1))
+                .andExpect(jsonPath("$.result.pagination.totalElements").value(3))
+                .andExpect(jsonPath("$.result.pagination.hasNext").value(true))
+                .andExpect(jsonPath("$.result.missionList[0].missionSpec").value("Order two americanos"))
+                .andExpect(jsonPath("$.result.missionList[0].status").value("CHALLENGING"));
+    }
+
+    @Test
+    @DisplayName("get my progress missions returns not found when member does not exist")
+    void getMyProgressMissionsFailsWhenMemberMissing() throws Exception {
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", "999999")
+                        .param("offset", "0")
+                        .param("limit", "10"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("MEMBER404_1"));
+    }
+
+    @Test
+    @DisplayName("get my progress missions returns bad request when offset is negative")
+    void getMyProgressMissionsFailsWhenOffsetIsNegative() throws Exception {
+        Member member = memberRepository.save(createMember("progress-invalid", "progress-invalid@example.com"));
+
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", member.getId().toString())
+                        .param("offset", "-1")
+                        .param("limit", "10"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test
@@ -111,7 +170,7 @@ class MissionControllerTest {
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result.listSize").value(2))
+                .andExpect(jsonPath("$.result.pagination.listSize").value(2))
                 .andExpect(jsonPath("$.result.missionList[0].missionSpec").value("Complete one dinner visit"))
                 .andExpect(jsonPath("$.result.missionList[0].status").value("COMPLETED"))
                 .andExpect(jsonPath("$.result.missionList[1].missionSpec").value("Complete one lunch visit"));

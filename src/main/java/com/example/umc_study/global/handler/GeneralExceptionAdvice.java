@@ -1,13 +1,13 @@
 package com.example.umc_study.global.handler;
 
-import com.example.umc_study.domain.review.dto.ReviewReqDTO;
-import com.example.umc_study.domain.review.exception.code.ReviewErrorCode;
 import com.example.umc_study.global.apiPayload.ApiResponse;
 import com.example.umc_study.global.code.BaseErrorCode;
 import com.example.umc_study.global.code.GeneralErrorCode;
 import com.example.umc_study.global.exception.ProjectException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,14 +27,12 @@ public class GeneralExceptionAdvice {
     public ResponseEntity<ApiResponse<String>> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException ex
     ) {
-        BaseErrorCode errorCode = resolveValidationErrorCode(ex);
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(FieldError::getDefaultMessage)
-                .orElse(null);
+        return handleValidationFailure(ex.getBindingResult());
+    }
 
-        return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.onFailure(errorCode, message));
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiResponse<String>> handleBindException(BindException ex) {
+        return handleValidationFailure(ex.getBindingResult());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -53,21 +51,18 @@ public class GeneralExceptionAdvice {
                 .body(ApiResponse.onFailure(code, ex.getMessage()));
     }
 
-    private BaseErrorCode resolveValidationErrorCode(MethodArgumentNotValidException ex) {
-        Object target = ex.getBindingResult().getTarget();
-        FieldError fieldError = ex.getBindingResult().getFieldErrors().stream()
+    private ResponseEntity<ApiResponse<String>> handleValidationFailure(BindingResult bindingResult) {
+        BaseErrorCode code = GeneralErrorCode.BAD_REQUEST;
+        String message = resolveValidationMessage(bindingResult);
+
+        return ResponseEntity.status(code.getStatus())
+                .body(ApiResponse.onFailure(code, message));
+    }
+
+    private String resolveValidationMessage(BindingResult bindingResult) {
+        return bindingResult.getFieldErrors().stream()
                 .findFirst()
+                .map(FieldError::getDefaultMessage)
                 .orElse(null);
-
-        if (target instanceof ReviewReqDTO.CreateReviewDTO && fieldError != null) {
-            return switch (fieldError.getField()) {
-                case "memberId" -> ReviewErrorCode.REVIEW_MEMBER_ID_REQUIRED;
-                case "score" -> ReviewErrorCode.REVIEW_SCORE_INVALID;
-                case "body" -> ReviewErrorCode.REVIEW_BODY_REQUIRED;
-                default -> GeneralErrorCode.BAD_REQUEST;
-            };
-        }
-
-        return GeneralErrorCode.BAD_REQUEST;
     }
 }
