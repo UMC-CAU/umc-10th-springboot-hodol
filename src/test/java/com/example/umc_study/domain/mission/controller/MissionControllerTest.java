@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -93,7 +91,7 @@ class MissionControllerTest {
     }
 
     @Test
-    @DisplayName("get my progress missions uses request body member id and offset pagination")
+    @DisplayName("get my progress missions uses query params and offset pagination")
     void getMyProgressMissionsByOffset() throws Exception {
         Member member = memberRepository.save(createMember("progress-1", "progress1@example.com"));
         Store store = storeRepository.save(createStore("Store Progress"));
@@ -110,17 +108,10 @@ class MissionControllerTest {
         updateMemberMissionTimestamps(second.getId(), LocalDateTime.of(2026, 5, 2, 10, 0), LocalDateTime.of(2026, 5, 2, 10, 0));
         updateMemberMissionTimestamps(third.getId(), LocalDateTime.of(2026, 5, 3, 10, 0), LocalDateTime.of(2026, 5, 3, 10, 0));
 
-        String requestBody = """
-                {
-                  "memberId": %d,
-                  "offset": 1,
-                  "limit": 1
-                }
-                """.formatted(member.getId());
-
-        mockMvc.perform(post("/api/missions/me/progress")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", member.getId().toString())
+                        .param("offset", "1")
+                        .param("limit", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value(true))
                 .andExpect(jsonPath("$.result.pagination.offset").value(1))
@@ -135,17 +126,10 @@ class MissionControllerTest {
     @Test
     @DisplayName("get my progress missions returns not found when member does not exist")
     void getMyProgressMissionsFailsWhenMemberMissing() throws Exception {
-        String requestBody = """
-                {
-                  "memberId": 999999,
-                  "offset": 0,
-                  "limit": 10
-                }
-                """;
-
-        mockMvc.perform(post("/api/missions/me/progress")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", "999999")
+                        .param("offset", "0")
+                        .param("limit", "10"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.isSuccess").value(false))
                 .andExpect(jsonPath("$.code").value("MEMBER404_1"));
@@ -156,20 +140,13 @@ class MissionControllerTest {
     void getMyProgressMissionsFailsWhenOffsetIsNegative() throws Exception {
         Member member = memberRepository.save(createMember("progress-invalid", "progress-invalid@example.com"));
 
-        String requestBody = """
-                {
-                  "memberId": %d,
-                  "offset": -1,
-                  "limit": 10
-                }
-                """.formatted(member.getId());
-
-        mockMvc.perform(post("/api/missions/me/progress")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/missions/me/progress")
+                        .param("memberId", member.getId().toString())
+                        .param("offset", "-1")
+                        .param("limit", "10"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("MISSION400_4"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test

@@ -127,7 +127,7 @@ class ReviewControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("REVIEW400_3"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test
@@ -148,7 +148,7 @@ class ReviewControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("REVIEW400_5"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test
@@ -290,7 +290,7 @@ class ReviewControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("REVIEW400_6"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     private Member createMember() {

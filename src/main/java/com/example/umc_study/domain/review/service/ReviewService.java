@@ -13,6 +13,7 @@ import com.example.umc_study.domain.review.enums.ReviewSortType;
 import com.example.umc_study.domain.review.exception.ReviewException;
 import com.example.umc_study.domain.review.exception.code.ReviewErrorCode;
 import com.example.umc_study.domain.review.repository.ReviewRepository;
+import com.example.umc_study.domain.review.repository.projection.MyReviewSummaryProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,14 +37,14 @@ public class ReviewService {
         validateCursor(request);
 
         Pageable pageable = PageRequest.of(0, request.getSize());
-        Slice<Review> reviewSlice = switch (request.getSortType()) {
-            case SCORE -> reviewRepository.findMyReviewsByScoreCursor(
+        Slice<MyReviewSummaryProjection> reviewSlice = switch (request.getSortType()) {
+            case SCORE -> reviewRepository.findMyReviewSummariesByScoreCursor(
                     request.getMemberId(),
                     request.getCursorScore(),
                     request.getCursorId(),
                     pageable
             );
-            case ID -> reviewRepository.findMyReviewsByIdCursor(
+            case ID -> reviewRepository.findMyReviewSummariesByIdCursor(
                     request.getMemberId(),
                     request.getCursorId(),
                     pageable

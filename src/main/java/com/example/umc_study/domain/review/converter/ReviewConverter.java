@@ -7,6 +7,7 @@ import com.example.umc_study.domain.review.dto.ReviewResDTO;
 import com.example.umc_study.domain.review.entity.Reply;
 import com.example.umc_study.domain.review.entity.Review;
 import com.example.umc_study.domain.review.enums.ReviewSortType;
+import com.example.umc_study.domain.review.repository.projection.MyReviewSummaryProjection;
 import org.springframework.data.domain.Slice;
 import org.springframework.util.StringUtils;
 
@@ -34,12 +35,15 @@ public class ReviewConverter {
                 .build();
     }
 
-    public static ReviewResDTO.MyReviewListDTO toMyReviewListDTO(Slice<Review> reviewSlice, ReviewSortType sortType) {
+    public static ReviewResDTO.MyReviewListDTO toMyReviewListDTO(
+            Slice<MyReviewSummaryProjection> reviewSlice,
+            ReviewSortType sortType
+    ) {
         java.util.List<ReviewResDTO.MyReviewDetailDTO> reviewList = reviewSlice.getContent().stream()
                 .map(ReviewConverter::toMyReviewDetailDTO)
                 .toList();
 
-        Review lastReview = reviewSlice.hasNext() && !reviewSlice.isEmpty()
+        MyReviewSummaryProjection lastReview = reviewSlice.hasNext() && !reviewSlice.isEmpty()
                 ? reviewSlice.getContent().get(reviewSlice.getNumberOfElements() - 1)
                 : null;
 
@@ -47,8 +51,12 @@ public class ReviewConverter {
                 .reviewList(reviewList)
                 .pagination(
                         ReviewResDTO.CursorPaginationDTO.builder()
-                                .nextCursorId(lastReview != null ? lastReview.getId() : null)
-                                .nextCursorScore(lastReview != null && sortType == ReviewSortType.SCORE ? lastReview.getScore() : null)
+                                .nextCursorId(lastReview != null ? lastReview.getReviewId() : null)
+                                .nextCursorScore(
+                                        lastReview != null && sortType == ReviewSortType.SCORE
+                                                ? lastReview.getScore()
+                                                : null
+                                )
                                 .size(reviewSlice.getSize())
                                 .hasNext(reviewSlice.hasNext())
                                 .build()
@@ -56,10 +64,10 @@ public class ReviewConverter {
                 .build();
     }
 
-    private static ReviewResDTO.MyReviewDetailDTO toMyReviewDetailDTO(Review review) {
+    private static ReviewResDTO.MyReviewDetailDTO toMyReviewDetailDTO(MyReviewSummaryProjection review) {
         return ReviewResDTO.MyReviewDetailDTO.builder()
-                .reviewId(review.getId())
-                .storeName(review.getStore().getName())
+                .reviewId(review.getReviewId())
+                .storeName(review.getStoreName())
                 .title(review.getTitle())
                 .body(review.getBody())
                 .score(review.getScore())

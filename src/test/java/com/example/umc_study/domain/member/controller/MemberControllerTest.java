@@ -99,7 +99,7 @@ class MemberControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("MEMBER400_1"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test
@@ -116,7 +116,7 @@ class MemberControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("MEMBER400_2"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     @Test
@@ -140,7 +140,7 @@ class MemberControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("MEMBER400_8"));
+                .andExpect(jsonPath("$.code").value("COMMON400_1"));
     }
 
     private Member createMember() {

@@ -1,8 +1,8 @@
 package com.example.umc_study.domain.mission.converter;
 
 import com.example.umc_study.domain.mission.dto.MissionResDTO;
-import com.example.umc_study.domain.mission.entity.Mission;
-import com.example.umc_study.domain.mission.entity.mapping.MemberMission;
+import com.example.umc_study.domain.mission.repository.projection.HomeMissionSummaryProjection;
+import com.example.umc_study.domain.mission.repository.projection.MemberMissionSummaryProjection;
 import com.example.umc_study.global.common.Pagination;
 import org.springframework.data.domain.Page;
 
@@ -12,21 +12,19 @@ import java.util.List;
 
 public class MissionConverter {
 
-    public static MissionResDTO.MissionListDTO toMissionListDTO(Page<MemberMission> memberMissionPage) {
+    public static MissionResDTO.MissionListDTO toMissionListDTO(Page<MemberMissionSummaryProjection> memberMissionPage) {
         List<MissionResDTO.MissionDetailDTO> missionList = memberMissionPage.getContent().stream()
                 .map(MissionConverter::toMissionDetailDTO)
                 .toList();
 
         return MissionResDTO.MissionListDTO.builder()
                 .missionList(missionList)
-                .pagination(toPagination(memberMissionPage))
+                .pagination(Pagination.from(memberMissionPage))
                 .build();
     }
 
     public static MissionResDTO.ProgressMissionListDTO toProgressMissionListDTO(
-            Page<MemberMission> memberMissionPage,
-            int offset,
-            int limit
+            Page<MemberMissionSummaryProjection> memberMissionPage
     ) {
         List<MissionResDTO.MissionDetailDTO> missionList = memberMissionPage.getContent().stream()
                 .map(MissionConverter::toMissionDetailDTO)
@@ -36,9 +34,9 @@ public class MissionConverter {
                 .missionList(missionList)
                 .pagination(
                         MissionResDTO.OffsetPaginationDTO.builder()
-                                .offset(offset)
-                                .limit(limit)
-                                .listSize(missionList.size())
+                                .offset(Math.toIntExact(memberMissionPage.getPageable().getOffset()))
+                                .limit(memberMissionPage.getSize())
+                                .listSize(memberMissionPage.getNumberOfElements())
                                 .totalElements(memberMissionPage.getTotalElements())
                                 .hasNext(memberMissionPage.hasNext())
                                 .build()
@@ -46,19 +44,19 @@ public class MissionConverter {
                 .build();
     }
 
-    public static MissionResDTO.MissionDetailDTO toMissionDetailDTO(MemberMission memberMission) {
+    public static MissionResDTO.MissionDetailDTO toMissionDetailDTO(MemberMissionSummaryProjection memberMission) {
         return MissionResDTO.MissionDetailDTO.builder()
-                .memberMissionId(memberMission.getId())
-                .missionId(memberMission.getMission().getId())
-                .storeName(memberMission.getMission().getStore().getName())
-                .missionSpec(memberMission.getMission().getMissionSpec())
-                .rewardPoint(memberMission.getMission().getReward() + "P")
+                .memberMissionId(memberMission.getMemberMissionId())
+                .missionId(memberMission.getMissionId())
+                .storeName(memberMission.getStoreName())
+                .missionSpec(memberMission.getMissionSpec())
+                .rewardPoint(memberMission.getReward() + "P")
                 .status(memberMission.getStatus())
                 .build();
     }
 
     public static MissionResDTO.HomeMissionListDTO toHomeMissionListDTO(
-            Page<Mission> missionPage,
+            Page<HomeMissionSummaryProjection> missionPage,
             long currentMissionCount,
             int targetMissionCount,
             int targetRewardPoint
@@ -76,19 +74,19 @@ public class MissionConverter {
                                 .build()
                 )
                 .missionList(missionList)
-                .pagination(toPagination(missionPage))
+                .pagination(Pagination.from(missionPage))
                 .build();
     }
 
-    public static MissionResDTO.HomeMissionDetailDTO toHomeMissionDetailDTO(Mission mission) {
+    public static MissionResDTO.HomeMissionDetailDTO toHomeMissionDetailDTO(HomeMissionSummaryProjection mission) {
         return MissionResDTO.HomeMissionDetailDTO.builder()
-                .missionId(mission.getId())
-                .storeName(mission.getStore().getName())
+                .missionId(mission.getMissionId())
+                .storeName(mission.getStoreName())
                 .missionSpec(mission.getMissionSpec())
                 .rewardPoint(mission.getReward() + "P")
                 .deadline(mission.getDeadline())
                 .dDay(toDDay(mission.getDeadline()))
-                .category(mission.getStore().getCategory())
+                .category(mission.getCategory())
                 .build();
     }
 
@@ -103,15 +101,4 @@ public class MissionConverter {
         return "D+" + Math.abs(days);
     }
 
-    private static Pagination toPagination(Page<?> page) {
-        return Pagination.builder()
-                .listSize(page.getNumberOfElements())
-                .pageNumber(page.getNumber())
-                .pageSize(page.getSize())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .build();
-    }
 }

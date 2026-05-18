@@ -21,9 +21,9 @@ public class MissionController {
 
     private final MissionService missionService;
 
-    @PostMapping("/me/progress")
+    @GetMapping("/me/progress")
     public ApiResponse<MissionResDTO.ProgressMissionListDTO> getMyProgressMissions(
-            @Valid @RequestBody MissionReqDTO.GetProgressMissionListDTO request
+            @ParameterObject @Valid @ModelAttribute MissionReqDTO.GetProgressMissionListDTO request
     ) {
         MissionResDTO.ProgressMissionListDTO result = missionService.getMyProgressMissions(request);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, result);

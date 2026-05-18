@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 @Getter
 @Builder
@@ -18,4 +19,16 @@ public class Pagination {
     private Long totalElements;
     private Boolean first;
     private Boolean last;
+
+    public static <T> Pagination from(Page<T> page) {
+        return Pagination.builder()
+                .listSize(page.getContent().size())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .build();
+    }
 }

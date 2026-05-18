@@ -311,7 +311,7 @@ public class SeedConfig implements ApplicationRunner {
         System.out.println("My Page: POST /api/v1/users/me -> memberOne id");
         System.out.println("Create Review: POST /api/stores/{storeId}/reviews -> memberOne id + pasta/china store id");
         System.out.println("My Reviews: POST /api/reviews/me -> memberOne id");
-        System.out.println("Mission Progress: POST /api/missions/me/progress -> memberOne id");
+        System.out.println("Mission Progress: GET /api/missions/me/progress -> memberOne id + offset + limit");
         System.out.println("Mission Home: GET /api/missions/home -> memberOne id + Gangnam region id");
         System.out.println("==================================================");
         System.out.println();
