@@ -21,6 +21,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     MEMBER_NICKNAME_REQUIRED(HttpStatus.BAD_REQUEST, "MEMBER400_10", "nickname is required."),
     MEMBER_PHONE_NUMBER_REQUIRED(HttpStatus.BAD_REQUEST, "MEMBER400_11", "phone number is required."),
     MEMBER_BIRTH_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "MEMBER400_12", "birth date is required."),
+    MEMBER_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "MEMBER409_1", "email already exists."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "member not found."),
     ;
 

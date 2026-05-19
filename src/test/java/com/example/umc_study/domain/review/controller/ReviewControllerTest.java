@@ -300,7 +300,9 @@ class ReviewControllerTest {
     private Member createMember(String name, String email, String socialUid) {
         return Member.builder()
                 .name(name)
+                .nickname(name)
                 .email(email)
+                .password("encoded-password")
                 .phoneNumber("01012345678")
                 .profileUrl("https://example.com/profile.png")
                 .point(0)

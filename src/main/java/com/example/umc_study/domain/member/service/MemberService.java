@@ -5,11 +5,14 @@ import com.example.umc_study.domain.member.dto.MemberReqDTO;
 import com.example.umc_study.domain.member.dto.MemberResDTO;
 import com.example.umc_study.domain.member.dto.MyPageResponseDTO;
 import com.example.umc_study.domain.member.entity.Member;
+import com.example.umc_study.domain.member.enums.Address;
+import com.example.umc_study.domain.member.enums.SocialType;
 import com.example.umc_study.domain.member.exception.MemberException;
 import com.example.umc_study.domain.member.exception.code.MemberErrorCode;
 import com.example.umc_study.domain.member.repository.MemberRepository;
 import com.example.umc_study.domain.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createUser(
@@ -64,9 +68,31 @@ public class MemberService {
 
     @Transactional
     public MemberResDTO.JoinResultDTO joinMember(MemberReqDTO.JoinDTO request) {
+        if (memberRepository.existsByEmail(request.email())) {
+            throw new MemberException(MemberErrorCode.MEMBER_EMAIL_ALREADY_EXISTS);
+        }
+
+        Member member = Member.builder()
+                .name(request.name())
+                .nickname(request.nickName())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .phoneNumber(request.phoneNumber())
+                .profileUrl("https://example.com/profiles/default.png")
+                .point(0)
+                .gender(request.gender())
+                .birth(request.birthDate())
+                .address(Address.values()[0])
+                .detailAddress("N/A")
+                .socialUid("local:" + request.email())
+                .socialType(SocialType.LOCAL)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+
         return MemberResDTO.JoinResultDTO.builder()
-                .memberId(1L)
-                .createdAt(java.time.LocalDateTime.now())
+                .memberId(savedMember.getId())
+                .createdAt(savedMember.getCreatedAt())
                 .build();
     }
 }
