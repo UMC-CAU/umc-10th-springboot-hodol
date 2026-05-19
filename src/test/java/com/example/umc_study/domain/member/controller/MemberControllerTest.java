@@ -23,6 +23,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,6 +66,7 @@ class MemberControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/v1/users/me")
+                        .with(user("mypage@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
@@ -87,6 +89,7 @@ class MemberControllerTest {
                 """;
 
         mockMvc.perform(post("/api/v1/users/me")
+                        .with(user("missing-member@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNotFound())
@@ -103,6 +106,7 @@ class MemberControllerTest {
                 """;
 
         mockMvc.perform(post("/api/v1/users/me")
+                        .with(user("missing-id@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -120,11 +124,29 @@ class MemberControllerTest {
                 """;
 
         mockMvc.perform(post("/api/v1/users/me")
+                        .with(user("invalid-id@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.isSuccess").value(false))
                 .andExpect(jsonPath("$.code").value("COMMON400_1"));
+    }
+
+    @Test
+    @DisplayName("my page returns unauthorized when authentication is missing")
+    void getMyPageFailsWhenAuthenticationIsMissing() throws Exception {
+        String requestBody = """
+                {
+                  "id": 1
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON401_1"));
     }
 
     @Test

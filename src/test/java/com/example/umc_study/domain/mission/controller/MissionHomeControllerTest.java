@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -79,6 +80,7 @@ class MissionHomeControllerTest {
         updateMissionCreatedAt(olderMission.getId(), LocalDateTime.of(2026, 5, 2, 10, 0));
 
         mockMvc.perform(get("/api/missions/home")
+                        .with(user("home@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("regionId", targetRegion.getId().toString())
                         .param("sortType", "LATEST")
@@ -109,6 +111,7 @@ class MissionHomeControllerTest {
         updateMissionCreatedAt(nearMission.getId(), LocalDateTime.of(2026, 5, 2, 9, 0));
 
         mockMvc.perform(get("/api/missions/home")
+                        .with(user("home@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("regionId", targetRegion.getId().toString())
                         .param("sortType", "DEADLINE")

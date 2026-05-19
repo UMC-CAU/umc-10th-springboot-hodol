@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -73,6 +74,7 @@ class MissionControllerTest {
         updateMemberMissionTimestamps(third.getId(), LocalDateTime.of(2026, 5, 3, 10, 0), LocalDateTime.of(2026, 5, 3, 10, 0));
 
         mockMvc.perform(get("/api/missions/me")
+                        .with(user("mission@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("status", "CHALLENGING")
                         .param("page", "0")
@@ -109,6 +111,7 @@ class MissionControllerTest {
         updateMemberMissionTimestamps(third.getId(), LocalDateTime.of(2026, 5, 3, 10, 0), LocalDateTime.of(2026, 5, 3, 10, 0));
 
         mockMvc.perform(get("/api/missions/me/progress")
+                        .with(user("mission@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("offset", "1")
                         .param("limit", "1"))
@@ -127,6 +130,7 @@ class MissionControllerTest {
     @DisplayName("get my progress missions returns not found when member does not exist")
     void getMyProgressMissionsFailsWhenMemberMissing() throws Exception {
         mockMvc.perform(get("/api/missions/me/progress")
+                        .with(user("mission@example.com"))
                         .param("memberId", "999999")
                         .param("offset", "0")
                         .param("limit", "10"))
@@ -141,6 +145,7 @@ class MissionControllerTest {
         Member member = memberRepository.save(createMember("progress-invalid", "progress-invalid@example.com"));
 
         mockMvc.perform(get("/api/missions/me/progress")
+                        .with(user("mission@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("offset", "-1")
                         .param("limit", "10"))
@@ -165,6 +170,7 @@ class MissionControllerTest {
         updateMemberMissionTimestamps(second.getId(), LocalDateTime.of(2026, 5, 1, 9, 0), LocalDateTime.of(2026, 5, 5, 12, 0));
 
         mockMvc.perform(get("/api/missions/me")
+                        .with(user("mission@example.com"))
                         .param("memberId", member.getId().toString())
                         .param("status", "COMPLETED")
                         .param("page", "0")
