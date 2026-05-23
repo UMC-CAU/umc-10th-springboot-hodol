@@ -32,6 +32,15 @@ public class MemberReqDTO {
     ) {
     }
 
+    public record LoginDTO(
+            @NotBlank(message = "email is required.")
+            @Email(message = "email must be a valid email address.")
+            String email,
+            @NotBlank(message = "password is required.")
+            String password
+    ) {
+    }
+
     public record GetInfo(
             @NotNull(message = "member id is required.")
             @Positive(message = "member id must be a positive number.")

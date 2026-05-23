@@ -9,6 +9,8 @@ import com.example.umc_study.domain.mission.entity.Store;
 import com.example.umc_study.domain.mission.repository.StoreRepository;
 import com.example.umc_study.domain.review.entity.Review;
 import com.example.umc_study.domain.review.repository.ReviewRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,100 +52,35 @@ class MemberControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
-    @DisplayName("my page returns profile and activity summary")
+    @DisplayName("my page returns profile and activity summary when bearer token is valid")
     void getMyPage() throws Exception {
-        Member member = memberRepository.save(createMember());
+        Member member = memberRepository.save(createLocalMember("mypage@example.com", "my-nickname"));
         Store store = storeRepository.save(createStore());
 
         reviewRepository.save(createReview(member, store, "First review"));
         reviewRepository.save(createReview(member, store, "Second review"));
 
-        String requestBody = """
-                {
-                  "id": %d
-                }
-                """.formatted(member.getId());
+        String accessToken = loginAndGetAccessToken("mypage@example.com", "already-encoded");
 
-        mockMvc.perform(post("/api/v1/users/me")
-                        .with(user("mypage@example.com"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/v2/users/me")
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isSuccess").value(true))
                 .andExpect(jsonPath("$.result.profile.nickname").value("my-nickname"))
                 .andExpect(jsonPath("$.result.profile.email").value("mypage@example.com"))
-                .andExpect(jsonPath("$.result.profile.phoneInfo.phoneNumber").value("01099998888"))
+                .andExpect(jsonPath("$.result.profile.phoneInfo.phoneNumber").value("01011112222"))
                 .andExpect(jsonPath("$.result.profile.phoneInfo.verified").value(true))
-                .andExpect(jsonPath("$.result.activitySummary.currentPointBalance").value(1200))
+                .andExpect(jsonPath("$.result.activitySummary.currentPointBalance").value(0))
                 .andExpect(jsonPath("$.result.activitySummary.reviewCount").value(2));
     }
 
     @Test
-    @DisplayName("my page returns not found when member does not exist")
-    void getMyPageFailsWhenMemberMissing() throws Exception {
-        String requestBody = """
-                {
-                  "id": 999999
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users/me")
-                        .with(user("missing-member@example.com"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("MEMBER404_1"));
-    }
-
-    @Test
-    @DisplayName("my page returns bad request when member id is missing")
-    void getMyPageFailsWhenMemberIdMissing() throws Exception {
-        String requestBody = """
-                {
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users/me")
-                        .with(user("missing-id@example.com"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("COMMON400_1"));
-    }
-
-    @Test
-    @DisplayName("my page returns bad request when member id is not positive")
-    void getMyPageFailsWhenMemberIdIsInvalid() throws Exception {
-        String requestBody = """
-                {
-                  "id": 0
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users/me")
-                        .with(user("invalid-id@example.com"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.isSuccess").value(false))
-                .andExpect(jsonPath("$.code").value("COMMON400_1"));
-    }
-
-    @Test
-    @DisplayName("my page returns unauthorized when authentication is missing")
+    @DisplayName("my page returns unauthorized when bearer token is missing")
     void getMyPageFailsWhenAuthenticationIsMissing() throws Exception {
-        String requestBody = """
-                {
-                  "id": 1
-                }
-                """;
-
-        mockMvc.perform(post("/api/v1/users/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+        mockMvc.perform(get("/api/v2/users/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.isSuccess").value(false))
                 .andExpect(jsonPath("$.code").value("COMMON401_1"));
@@ -190,6 +127,67 @@ class MemberControllerTest {
         assertThat(savedMember.getPassword()).isNotEqualTo("secret-password");
         assertThat(passwordEncoder.matches("secret-password", savedMember.getPassword())).isTrue();
         assertThat(savedMember.getSocialType()).isEqualTo(SocialType.LOCAL);
+    }
+
+    @Test
+    @DisplayName("login returns access token and member info when credentials are valid")
+    void loginSuccess() throws Exception {
+        memberRepository.save(createLocalMember("login-user@example.com", "login-nickname"));
+
+        String requestBody = """
+                {
+                  "email": "login-user@example.com",
+                  "password": "already-encoded"
+                }
+                """;
+
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isSuccess").value(true))
+                .andExpect(jsonPath("$.result.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.result.memberId").isNumber())
+                .andExpect(jsonPath("$.result.email").value("login-user@example.com"))
+                .andExpect(jsonPath("$.result.nickname").value("login-nickname"));
+    }
+
+    @Test
+    @DisplayName("login returns unauthorized when password is invalid")
+    void loginFailsWhenPasswordIsInvalid() throws Exception {
+        memberRepository.save(createLocalMember("wrong-password@example.com", "wrong-password-user"));
+
+        String requestBody = """
+                {
+                  "email": "wrong-password@example.com",
+                  "password": "not-the-right-password"
+                }
+                """;
+
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON401_1"));
+    }
+
+    @Test
+    @DisplayName("login returns unauthorized when email does not exist")
+    void loginFailsWhenEmailDoesNotExist() throws Exception {
+        String requestBody = """
+                {
+                  "email": "missing-login@example.com",
+                  "password": "some-password"
+                }
+                """;
+
+        mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON401_1"));
     }
 
     @Test
@@ -294,5 +292,23 @@ class MemberControllerTest {
                 .member(member)
                 .store(store)
                 .build();
+    }
+
+    private String loginAndGetAccessToken(String email, String password) throws Exception {
+        String requestBody = """
+                {
+                  "email": "%s",
+                  "password": "%s"
+                }
+                """.formatted(email, password);
+
+        MvcResult result = mockMvc.perform(post("/api/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+        return json.path("result").path("accessToken").asText();
     }
 }
