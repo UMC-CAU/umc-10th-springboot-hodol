@@ -46,6 +46,15 @@ public class LoginController {
                                 Sign in
                             </button>
                         </form>
+                        <div style="margin: 20px 0; display: flex; align-items: center; gap: 12px;">
+                            <div style="height: 1px; flex: 1; background: #eaecf0;"></div>
+                            <span style="color: #98a2b3; font-size: 14px;">or</span>
+                            <div style="height: 1px; flex: 1; background: #eaecf0;"></div>
+                        </div>
+                        <a href="/oauth/authorize/kakao"
+                           style="display: block; text-align: center; text-decoration: none; padding: 12px; border-radius: 8px; background: #fee500; color: #191919; font-weight: 700;">
+                            Continue with Kakao
+                        </a>
                     </div>
                 </body>
                 </html>

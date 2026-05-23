@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
@@ -29,21 +28,15 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException, ServletException {
-        // 사전 작업: Response 매핑할 ObjectMapper 선언
         ObjectMapper objectMapper = new ObjectMapper();
         BaseSuccessCode code = GeneralSuccessCode.OK;
 
-        // Content-Type, Status 설정
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(code.getStatus().value());
 
-        // 인증 객체 컨테이너에서 OAuth 인증 객체 가져오기
-        OAuthMember member = (OAuthMember) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // 토큰 제작을 위해 OAuth 인증 객체에서 Member 추출 -> AuthMember 제작
+        OAuthMember member = (OAuthMember) authentication.getPrincipal();
         String accessToken = jwtUtil.createAccessToken(new AuthMember(member.getMember()));
 
-        // 응답 통일 객체 래핑
         ApiResponse<MemberResDTO.LoginResultDTO> responseBody = ApiResponse.onSuccess(
                 code,
                 MemberResDTO.LoginResultDTO.builder()
@@ -54,7 +47,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
                         .build()
         );
 
-        // 응답 출력
         objectMapper.writeValue(response.getOutputStream(), responseBody);
     }
 }

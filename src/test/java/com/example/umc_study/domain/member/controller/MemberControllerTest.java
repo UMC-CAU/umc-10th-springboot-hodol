@@ -97,6 +97,14 @@ class MemberControllerTest {
     }
 
     @Test
+    @DisplayName("login page exposes kakao oauth entry link")
+    void loginPageShowsKakaoEntry() throws Exception {
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/oauth/authorize/kakao")));
+    }
+
+    @Test
     @DisplayName("signup stores encoded password and returns created member info")
     void joinSuccess() throws Exception {
         String requestBody = """
