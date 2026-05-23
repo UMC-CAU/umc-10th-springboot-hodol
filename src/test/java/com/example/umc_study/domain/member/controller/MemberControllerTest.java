@@ -105,6 +105,16 @@ class MemberControllerTest {
     }
 
     @Test
+    @DisplayName("login page shows oauth failure reason when social login callback fails")
+    void loginPageShowsOauthFailureReason() throws Exception {
+        mockMvc.perform(get("/login")
+                        .param("error", "social")
+                        .param("reason", "authorization_request_not_found"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("authorization_request_not_found")));
+    }
+
+    @Test
     @DisplayName("signup stores encoded password and returns created member info")
     void joinSuccess() throws Exception {
         String requestBody = """

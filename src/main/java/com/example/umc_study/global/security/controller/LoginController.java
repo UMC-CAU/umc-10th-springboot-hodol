@@ -2,6 +2,8 @@ package com.example.umc_study.global.security.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -12,11 +14,16 @@ public class LoginController {
     @ResponseBody
     @GetMapping(value = "/login", produces = MediaType.TEXT_HTML_VALUE)
     public String loginPage(@RequestParam(required = false) String error,
+                            @RequestParam(required = false) String reason,
                             @RequestParam(required = false) String logout) {
         String notice = "";
 
         if (error != null) {
-            notice = "<p style=\"color:#b42318;\">email or password is invalid.</p>";
+            String reasonDetail = "";
+            if (StringUtils.hasText(reason)) {
+                reasonDetail = " (" + HtmlUtils.htmlEscape(reason) + ")";
+            }
+            notice = "<p style=\"color:#b42318;\">login failed. please try again." + reasonDetail + "</p>";
         } else if (logout != null) {
             notice = "<p style=\"color:#067647;\">you have been logged out.</p>";
         }

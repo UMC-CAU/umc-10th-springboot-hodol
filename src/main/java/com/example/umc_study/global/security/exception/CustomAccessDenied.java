@@ -22,14 +22,10 @@ public class CustomAccessDenied implements AccessDeniedHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         BaseErrorCode code = GeneralErrorCode.FORBIDDEN;
 
-        // 응답 Content-Type, HTTP 상태코드 정의
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(code.getStatus().value());
 
-        // Response Body에 응답통일한 객체를 넣기
-        ApiResponse<Void> errorResponse = ApiResponse.onFailure(code,null);
-
-        // 실제 Response로 덮어쓰기
+        ApiResponse<Void> errorResponse = ApiResponse.onFailure(code, null);
         objectMapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }

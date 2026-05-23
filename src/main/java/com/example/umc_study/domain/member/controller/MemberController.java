@@ -19,7 +19,7 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @GetMapping("/v2/users/me")
+    @GetMapping("/v1/users/me")
     public ApiResponse<MyPageResponseDTO> getMyPage(
             @AuthenticationPrincipal AuthMember authMember
     ) {
