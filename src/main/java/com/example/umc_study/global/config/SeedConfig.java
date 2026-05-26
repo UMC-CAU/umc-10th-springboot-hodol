@@ -204,6 +204,8 @@ public class SeedConfig implements ApplicationRunner {
         return Member.builder()
                 .name(name)
                 .email(email)
+                .nickname(name)
+                .password("{noop}seed-password")
                 .phoneNumber(phoneNumber)
                 .profileUrl("https://example.com/profiles/" + socialUid + ".png")
                 .point(point)

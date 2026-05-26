@@ -32,7 +32,7 @@ public class MemberConverter {
     public static MyPageResponseDTO toMyPageResponse(Member member, long reviewCount) {
         return new MyPageResponseDTO(
                 new MyPageResponseDTO.ProfileInfo(
-                        member.getName(),
+                        member.getNickname(),
                         member.getEmail(),
                         new MyPageResponseDTO.PhoneInfo(
                                 member.getPhoneNumber(),

@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,6 +63,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         String responseBody = mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
@@ -101,6 +103,7 @@ class ReviewControllerTest {
                 """;
 
         mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNotFound())
@@ -123,6 +126,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -144,6 +148,7 @@ class ReviewControllerTest {
                 """;
 
         mockMvc.perform(post("/api/stores/{storeId}/reviews", store.getId())
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -173,6 +178,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(firstRequestBody))
                 .andExpect(status().isOk())
@@ -194,6 +200,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId(), secondReview.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(secondRequestBody))
                 .andExpect(status().isOk())
@@ -221,6 +228,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(firstRequestBody))
                 .andExpect(status().isOk())
@@ -242,6 +250,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId(), newerTieReview.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(secondRequestBody))
                 .andExpect(status().isOk())
@@ -265,6 +274,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -286,6 +296,7 @@ class ReviewControllerTest {
                 """.formatted(member.getId());
 
         mockMvc.perform(post("/api/reviews/me")
+                        .with(user("reviewer@example.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -300,7 +311,9 @@ class ReviewControllerTest {
     private Member createMember(String name, String email, String socialUid) {
         return Member.builder()
                 .name(name)
+                .nickname(name)
                 .email(email)
+                .password("encoded-password")
                 .phoneNumber("01012345678")
                 .profileUrl("https://example.com/profile.png")
                 .point(0)
