@@ -19,6 +19,17 @@ public class MemberResDTO {
     }
 
     @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginResultDTO {
+        private String accessToken;
+        private Long memberId;
+        private String email;
+        private String nickname;
+    }
+
+    @Builder
     public record GetInfo(
             String name,
             String profileUrl,

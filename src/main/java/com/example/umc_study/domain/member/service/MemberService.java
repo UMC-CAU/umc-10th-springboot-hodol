@@ -11,6 +11,9 @@ import com.example.umc_study.domain.member.exception.MemberException;
 import com.example.umc_study.domain.member.exception.code.MemberErrorCode;
 import com.example.umc_study.domain.member.repository.MemberRepository;
 import com.example.umc_study.domain.review.repository.ReviewRepository;
+import com.example.umc_study.global.code.GeneralErrorCode;
+import com.example.umc_study.global.security.entity.AuthMember;
+import com.example.umc_study.global.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Transactional
     public String createUser(
@@ -54,10 +58,9 @@ public class MemberService {
         return MemberConverter.toRequestBody(dto.stringTest(), dto.longTest());
     }
 
-    public MyPageResponseDTO getMyPage(
-            MemberReqDTO.GetInfo dto
-    ) {
-        Long memberId = dto.id();
+    @Transactional(readOnly = true)
+    public MyPageResponseDTO getMyPage(AuthMember authMember) {
+        Long memberId = authMember.getMember().getId();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -93,6 +96,25 @@ public class MemberService {
         return MemberResDTO.JoinResultDTO.builder()
                 .memberId(savedMember.getId())
                 .createdAt(savedMember.getCreatedAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MemberResDTO.LoginResultDTO login(MemberReqDTO.LoginDTO request) {
+        Member member = memberRepository.findByEmail(request.email())
+                .orElseThrow(() -> new MemberException(GeneralErrorCode.UNAUTHORIZED));
+
+        if (!passwordEncoder.matches(request.password(), member.getPassword())) {
+            throw new MemberException(GeneralErrorCode.UNAUTHORIZED);
+        }
+
+        String accessToken = jwtUtil.createAccessToken(new AuthMember(member));
+
+        return MemberResDTO.LoginResultDTO.builder()
+                .accessToken(accessToken)
+                .memberId(member.getId())
+                .email(member.getEmail())
+                .nickname(member.getNickname())
                 .build();
     }
 }

@@ -18,3 +18,28 @@ spring:
       hibernate:
         format_sql: true
     show-sql: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/oauth/callback/kakao"
+            scope:
+              - profile_nickname
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: "https://kauth.kakao.com/oauth/authorize"
+            token-uri: "https://kauth.kakao.com/oauth/token"
+            user-info-uri: "https://kapi.kakao.com/v2/user/me"
+            user-name-attribute: id
+
+jwt:
+  token:
+    secretKey: test-secret-key-that-is-long-enough-for-hmac-signing-123456
+    expiration:
+      access: 1800000
